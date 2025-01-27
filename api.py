@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from flask import Flask, request, jsonify
 import pandas as pd
 from xgboost import XGBRegressor
@@ -143,4 +142,3 @@ def predict():
 # Run the API
 if __name__ == '__main__':
     app.run(debug=True)
->>>>>>> 91186725090f9c738d3aa237415cf1fca93259e4
