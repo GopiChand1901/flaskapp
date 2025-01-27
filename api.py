@@ -24,6 +24,7 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    print("request recieved")
     try:
         # Parse JSON input
         input_data = request.get_json()
@@ -52,8 +53,6 @@ def predict():
         return jsonify({'predicted_price': prediction})
 
     except Exception as e:
-        # Log error to console
-        print("Error during prediction:", str(e))
         # Return error details
         return jsonify({'error': str(e)}), 400
 
