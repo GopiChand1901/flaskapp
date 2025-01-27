@@ -1,12 +1,15 @@
 from flask import Flask, request, jsonify
 import pandas as pd
 from xgboost import XGBRegressor
+import warnings
+
 
 # Initialize Flask app
 app = Flask(__name__)
 
 # Load the trained XGBoost model
 xgb_model = XGBRegressor()
+warnings.filterwarnings("ignore", message=".*__sklearn_tags__.*")
 
 try:
     print("Loading model from: ./gb_model.bst")  # Update path as needed
