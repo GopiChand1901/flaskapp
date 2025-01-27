@@ -6,11 +6,11 @@ from xgboost import XGBRegressor
 app = Flask(__name__)
 
 # Load the trained XGBoost model
-xgb_model = XGBRegressor()
+xgb_model = XGBRegressor(verbosity=3)  # Added verbosity for detailed logs
 
 try:
-    print("Loading model from: ./gb_model.bst")  # Update path as needed
-    xgb_model.load_model('./gb_model.bst')  # Use the correct model file
+    print("Loading model from: ./gb_model.bst")  # Debug: Print model path
+    xgb_model.load_model('./gb_model.bst')  # Load the model
     print("Model loaded successfully!")
 except Exception as e:
     print("Error loading model:", str(e))
@@ -24,10 +24,12 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    print("request recieved")
+    print("Request received at /predict")  # Debug: Log when endpoint is hit
+
     try:
         # Parse JSON input
         input_data = request.get_json()
+        print("Raw input data:", input_data)  # Debug: Log raw input
 
         # Convert JSON to DataFrame
         input_df = pd.DataFrame([input_data])
@@ -43,6 +45,20 @@ def predict():
 
         # Debug: Print input DataFrame after processing
         print("Input DataFrame after processing:")
+        print(input_df.dtypes)  # Log data types of columns
+
+        # Align input DataFrame to match model's expected features
+        expected_features = ['brand', 'model', 'fuel_type', 'engine', 'transmission', 'ext_col', 'int_col', 'accident', 'clean_title', 'model_year', 'milage']
+        print("Expected features:", expected_features)  # Debug: Print expected features
+
+        # Add missing columns with default values
+        for feature in expected_features:
+            if feature not in input_df.columns:
+                input_df[feature] = 0  # Default value for missing columns
+        input_df = input_df[expected_features]
+
+        # Debug: Print aligned input DataFrame
+        print("Aligned Input DataFrame:")
         print(input_df)
 
         # Make prediction
@@ -53,6 +69,8 @@ def predict():
         return jsonify({'predicted_price': prediction})
 
     except Exception as e:
+        # Log the error
+        print("Error during prediction:", str(e))
         # Return error details
         return jsonify({'error': str(e)}), 400
 
