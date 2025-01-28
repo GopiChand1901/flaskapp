@@ -12,37 +12,46 @@ xgb_model = XGBRegressor()
 warnings.filterwarnings("ignore", message=".*__sklearn_tags__.*")
 
 try:
-    print("Loading model from: ./gb_model.bst")  # Update path as needed
-    xgb_model.load_model('./gb_model.bst')  # Use the correct model file
+    print("Loading model from: ./gb_model.json")  # Debug
+    xgb_model.load_model('./gb_model.json')  # Load model
     print("Model loaded successfully!")
 except Exception as e:
     print("Error loading model:", str(e))
 
 # Define categorical columns
-categorical_features = ['brand', 'model', 'fuel_type', 'engine', 'transmission', 'ext_col', 'int_col', 'accident', 'clean_title']
+categorical_features = [
+    'brand', 'model','model_year','milage', 'fuel_type', 'engine', 'transmission', 
+    'ext_col', 'int_col', 'accident', 'clean_title'
+]
+
+# Expected features in the correct order
+expected_features = [
+    'brand', 'model','model_year','milage', 'fuel_type', 'engine', 'transmission', 
+    'ext_col', 'int_col', 'accident', 'clean_title'
+]
 
 @app.route('/', methods=['GET'])
 def home():
-    return "XGBoost Car Price Prediction API is running! Use the /predict endpoint to make predictions."
+    return "✅ XGBoost Car Price Prediction API is running! Use the /predict endpoint to make predictions."
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    print("Request received at /predict")  # Debug: Log when endpoint is hit
+    print("📩 Request received at /predict")
 
     try:
-        # Ensure JSON content type
+        # Ensure JSON request
         if not request.is_json:
             return jsonify({'error': 'Request must be in JSON format'}), 400
         
         # Parse JSON input
         input_data = request.get_json()
-        print("Raw input data:", input_data)  # Debug: Log raw input
+        print("🔍 Raw input data:", input_data)
 
         # Convert JSON to DataFrame
         input_df = pd.DataFrame([input_data])
 
-        # Debug: Print input DataFrame before processing
-        print("Input DataFrame before processing:")
+        # Debug: Check input DataFrame before processing
+        print("📝 Input DataFrame before processing:")
         print(input_df)
 
         # Ensure categorical columns are converted to 'category' dtype
@@ -51,21 +60,19 @@ def predict():
                 input_df[col] = input_df[col].astype('category')
 
         # Debug: Print input DataFrame after processing
-        print("Input DataFrame after processing:")
-        print(input_df.dtypes)  # Log data types of columns
+        print("📊 Input DataFrame after processing:")
+        print(input_df.dtypes)
 
-        # Align input DataFrame to match model's expected features
-        expected_features = ['brand', 'model', 'fuel_type', 'engine', 'transmission', 'ext_col', 'int_col', 'accident', 'clean_title', 'model_year', 'milage']
-        print("Expected features:", expected_features)  # Debug: Print expected features
-
-        # Add missing columns with default values
+        # Ensure DataFrame columns match the trained model
         for feature in expected_features:
             if feature not in input_df.columns:
                 input_df[feature] = 0  # Default value for missing columns
+        
+        # Sort columns to match training order
         input_df = input_df[expected_features]
 
-        # Debug: Print aligned input DataFrame
-        print("Aligned Input DataFrame:")
+        # Debug: Check aligned DataFrame
+        print("✅ Aligned Input DataFrame:")
         print(input_df)
 
         # Make prediction
@@ -77,11 +84,10 @@ def predict():
 
     except Exception as e:
         # Log the error
-        print("Error during prediction:", str(e))
-        # Return error details
+        print("❌ Error during prediction:", str(e))
         return jsonify({'error': str(e)}), 400
 
-# Running in development only (NOT needed for Railway deployment)
+# Running in development only
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 8000))
     app.run(host='0.0.0.0', port=port, debug=True)
