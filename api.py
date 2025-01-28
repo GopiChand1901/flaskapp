@@ -13,7 +13,7 @@ warnings.filterwarnings("ignore", message=".*__sklearn_tags__.*")
 
 try:
     print("Loading model from: ./gb_model.json")  # Debug
-    xgb_model.load_model('./gb_model.json')  # Load model
+    xgb_model.load_model('./gb_model.bst')  # Load model
     print("Model loaded successfully!")
 except Exception as e:
     print("Error loading model:", str(e))
